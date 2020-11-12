@@ -8,31 +8,42 @@ include('css/start.php');
   </button>
 
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <ul class="navbar-nav mr-auto">
-      <li class="nav-item active">
-        <a class="nav-link" href="https://www.w3schools.com" target="iframe_a">Consulta <span class="sr-only">(current)</span></a>
+    <ul class="navbar-nav mx-auto">
+      <li class="nav-item active"style="
+    padding: 4px;
+">
+        <a class="nav-link" href="https://www.w3schools.com" target="iframe_a"><i class="fas fa-address-book"> Consulta</i></a>
       </li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Cadastros
+          <i class="fas fa-user-plus"> Cadastros</i>
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-          <a class="dropdown-item" href="https://www.w3schools.com" target="iframe_a">Action</a>
+          <a class="dropdown-item" href="https://www.w3schools.com" target="iframe_a">Categorias</a>
           <div class="dropdown-divider"></div>
-          <a class="dropdown-item"href="https://www.w3schools.com" target="iframe_a">Something else here</a>
+          <a class="dropdown-item"href="https://www.w3schools.com" target="iframe_a">Produtos</a>
         </div>
       </li>
     </ul>
   </div>
 </nav>
 <div class="embed-responsive embed-responsive-21by9">
-  <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/zpOULjyy-n8?rel=0" name="iframe_a" allowfullscreen></iframe>
+  <iframe class="embed-responsive-item" src="" name="iframe_a" allowfullscreen></iframe>
 </div>
 <script>
-$( '#navbarSupportedContent .navbar-nav a' ).on( 'click', function () {
-	$( '#navbarSupportedContent .navbar-nav' ).find( 'nav-item active' ).removeClass( 'active' );
-	$( this ).parent( 'nav-item' ).addClass( 'active' );
-});</script>
+$(document).ready(function() {
+        $(".nav-item").click(function(event) {
+           $(".nav-item").removeClass('active');
+           $(".dropdown-item").removeClass('active');
+          $(this).addClass('active'); 
+         }); 
+        $(".dropdown-item").click(function(event) {
+           $(".nav-item").removeClass('active');
+           $(".dropdown-item").removeClass('active');
+          $(this).addClass('active'); 
+         }); 
+    });
+</script>
 <?php
 
 ?>
