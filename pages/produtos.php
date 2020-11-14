@@ -141,10 +141,11 @@ The above copyright notice and this permission notice shall be included in all c
                 <div class="card-body table-responsive">
                   <table class="table table-hover" id="myTable">
                     <thead class="text-warning">
-                      <th>Linha</th>
                       <th>Categoria</th>
                       <th>Nome</th>
                       <th>Descrição</th>
+                      <th>Valor</th>
+                      <th>Estoque</th>
                       <th class="text-right">Ações</th>
                     </thead>
                     <tbody id="tab-id">
@@ -158,14 +159,16 @@ The above copyright notice and this permission notice shall be included in all c
                     $json = curl_exec($crl);
                     curl_close($crl);
                     $arr=json_decode($json, true);
+                    if($arr){
                     if(count($arr)>1){
                     foreach($arr as $key=>$value){
                       echo"
                             <tr>
-                              <td>".$value['idind']."</td>
                               <td>".$value['categoria']."</td>
                               <td>".$value['nome']."</td>
                               <td>".$value['descricao']."</td>
+                              <td>R$ ".$value['valor']."</td>
+                              <td>".$value['estoque']."</td>
                               <td class='td-actions text-right'>
                                 <a role='button'  href='produtos_edit.php?idProduto=".$value['idProduto']."' class='btn btn-warning btn-round'>
                                     <i style='top:18px;' class='material-icons'>edit</i>
@@ -181,10 +184,11 @@ The above copyright notice and this permission notice shall be included in all c
                   }elseif(count($arr)==1){
                       echo"
                             <tr>
-                              <td>".$arr[0]['idind']."</td>
                               <td>".$arr[0]['categoria']."</td>
                               <td>".$arr[0]['nome']."</td>
                               <td>".$arr[0]['descricao']."</td>
+                              <td>R$ ".$arr[0]['valor']."</td>
+                              <td>".$arr[0]['estoque']."</td>
                               <td class='td-actions text-right'>
                                 <a role='button' href='produtos_edit.php?idProduto=".$arr[0]['idProduto']."' class='btn btn-warning btn-round'>
                                     <i style='top:18px;'class='material-icons'>edit</i>
@@ -197,6 +201,7 @@ The above copyright notice and this permission notice shall be included in all c
                           </tr>
                       <?php
                   }
+                    }
                     ?>
                     </tbody>
                   </table>

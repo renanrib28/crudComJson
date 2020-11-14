@@ -141,7 +141,6 @@ The above copyright notice and this permission notice shall be included in all c
                 <div class="card-body table-responsive">
                   <table class="table table-hover" id="myTable">
                     <thead class="text-warning">
-                      <th>Linha</th>
                       <th>Nome</th>
                       <th>Descrição</th>
                       <th class="text-right">Ações</th>
@@ -157,11 +156,11 @@ The above copyright notice and this permission notice shall be included in all c
                     $json = curl_exec($crl);
                     curl_close($crl);
                     $arr=json_decode($json, true);
+                    if($arr){
                     if(count($arr)>1){
                     foreach($arr as $key=>$value){
                       echo"
                             <tr>
-                              <td>".$value['idind']."</td>
                               <td>".$value['nome']."</td>
                               <td>".$value['descricao']."</td>
                               <td class='td-actions text-right'>
@@ -179,7 +178,6 @@ The above copyright notice and this permission notice shall be included in all c
                   }elseif(count($arr)==1){
                       echo"
                             <tr>
-                              <td>".$arr[0]['idind']."</td>
                               <td>".$arr[0]['nome']."</td>
                               <td>".$arr[0]['descricao']."</td>
                               <td class='td-actions text-right'>
@@ -194,6 +192,7 @@ The above copyright notice and this permission notice shall be included in all c
                           </tr>
                       <?php
                   }
+                }
                     ?>
                     </tbody>
                   </table>
