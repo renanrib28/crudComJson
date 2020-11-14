@@ -1,5 +1,5 @@
 <?php
-include('assets/functions/connection.php');
+include('../assets/functions/connection.php');
 ?>
 
 <!--
@@ -29,14 +29,29 @@ The above copyright notice and this permission notice shall be included in all c
   <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
   <!-- CSS Files -->
-  <link href="assets/css/material-dashboard.css?v=2.1.2" rel="stylesheet" />
+  <link href="../assets/css/material-dashboard.css?v=2.1.2" rel="stylesheet" />
   <!-- CSS Just for demo purpose, don't include it in your project -->
-  <link href="assets/demo/demo.css" rel="stylesheet" />
+  <link href="../assets/demo/demo.css" rel="stylesheet" />
 </head>
-
+<style>
+  .btn .material-icons, .btn:not(.btn-just-icon):not(.btn-fab) .fa {
+    position: relative;
+    display: inline-block;
+    top: 8px;
+    margin-top: -1em;
+    margin-bottom: -1em;
+    font-size: 1.1rem;
+    vertical-align: middle;
+}
+.table .td-actions .btn {
+    margin: 0px;
+    padding: 5px;
+    height: 27px;
+}
+</style>
 <body class="">
   <div class="wrapper ">
-    <div class="sidebar" data-color="azure" data-background-color="white" data-image="assets/img/sidebar-1.jpg">
+    <div class="sidebar" data-color="azure" data-background-color="white" data-image="../assets/img/sidebar-1.jpg">
       <!--
         Tip 1: You can change the color of the sidebar using: data-color="purple | azure | green | orange | danger"
 
@@ -47,14 +62,14 @@ The above copyright notice and this permission notice shall be included in all c
         </div></div>
       <div class="sidebar-wrapper" id="navbarSupportedContent">
         <ul class="nav">
-          <li class="nav-item active  ">
-            <a class="nav-link" href="index.php">
+          <li class="nav-item">
+            <a class="nav-link" href="../index.php">
               <i class="material-icons">home</i>
               <p>Início</p>
             </a>
           </li>
-          <li class="nav-item ">
-            <a class="nav-link" href="pages/categorias.php">
+          <li class="nav-item active">
+            <a class="nav-link" href="categorias.php">
               <i class="material-icons">toc</i>
               <p>Categorias</p>
             </a>
@@ -87,10 +102,17 @@ The above copyright notice and this permission notice shall be included in all c
         <div class="container-fluid">
           
           <div class="row">
-            <div class="col-lg-6 col-md-12">
+            <div class="col-lg-12 col-md-12">
               <div class="card">
                 <div class="card-header card-header-warning">
-                  <h4 class="card-title">Categorias</h4>
+                  <h4 class="card-title">Categorias 
+                    <button type="button" id="btn_reload" class="btn btn-info btn-fab btn-fab-mini btn-round" style="float: right;">
+                      <i class="material-icons" style="color: black;">cached</i>
+                    </button>
+                    <button type='button' class="btn btn-success btn-fab btn-fab-mini btn-round" style="float: right;">
+                      <i class='material-icons'>add_circle</i>
+                    </button>
+                  </h4>
                   <p class="card-category">Últimas 10 Categorias Incluídas</p>
                 </div>
                 <div class="card-body table-responsive">
@@ -99,13 +121,14 @@ The above copyright notice and this permission notice shall be included in all c
                       <th>ID</th>
                       <th>Nome</th>
                       <th>Descrição</th>
+                      <th class="text-right">Ações</th>
                     </thead>
                     <tbody>
                     <?php
                     $sql="select * from (SELECT t.*, 
                                @rownum := @rownum + 1 as idind
                           FROM categorias t, 
-                               (SELECT @rownum := 0) r) as categ ORDER BY idind desc limit 10";
+                               (SELECT @rownum := 0) r) as categ";
                     $result=mysqli_query($conn,$sql);
                      while ($dados=mysqli_fetch_array($result)) {
                       echo"
@@ -113,50 +136,15 @@ The above copyright notice and this permission notice shall be included in all c
                               <td>".$dados['idind']."</td>
                               <td>".$dados['nome']."</td>
                               <td>".$dados['descricao']."</td>
-                            </tr>
-                      ";
-                    }
-                    ?>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-6 col-md-12">
-              <div class="card">
-                <div class="card-header card-header-success">
-                  <h4 class="card-title">Produtos</h4>
-                  <p class="card-category">Últimos 10 Produtos Incluídas</p>
-                </div>
-                <div class="card-body table-responsive">
-                  <table class="table table-hover">
-                    <thead class="text-warning">
-                      <th>ID</th>
-                      <th>Categoria</th>
-                      <th>Nome</th>
-                      <th style="width: 30%;">Descrição</th>
-                      <th>Valor</th>
-                      <th>Estoque</th>
-                    </thead>
-                    <tbody>
-                      <?php
-                    $sql="select * from (SELECT c.nome as categoria,t.nome,t.descricao,t.valor,t.estoque,
-                               @rownum := @rownum + 1 as idind
-                          FROM produtos t INNER JOIN categorias c on c.idCategoria=t.idCategoria, 
-                               (SELECT @rownum := 0) r
-                               
-                               ) as categ ORDER BY idind desc limit 10";
-                    $result=mysqli_query($conn,$sql);
-                     while ($dados=mysqli_fetch_array($result)) {
-                      echo"
-                            <tr>
-                              <td>".$dados['idind']."</td>
-                              <td>".$dados['categoria']."</td>
-                              <td>".$dados['nome']."</td>
-                              <td>".$dados['descricao']."</td>
-                              <td>R$ ".$dados['valor']."</td>
-                              <td>".$dados['estoque']."</td>
-                            </tr>
+                              <td class='td-actions text-right'>
+                                <button type='button' rel='tooltip' class='btn btn-warning btn-round'>
+                                    <i class='material-icons'>edit</i>
+                                </button>
+                                <button type='button' rel='tooltip' class='btn btn-danger btn-round'>
+                                    <i class='material-icons'>close</i>
+                                </button>
+                            </td>
+                          </tr>
                       ";
                     }
                     ?>
@@ -182,51 +170,55 @@ The above copyright notice and this permission notice shall be included in all c
     </div>
   </div>
   <!--   Core JS Files   -->
-  <script src="assets/js/core/jquery.min.js"></script>
-  <script src="assets/js/core/popper.min.js"></script>
-  <script src="assets/js/core/bootstrap-material-design.min.js"></script>
-  <script src="assets/js/plugins/perfect-scrollbar.jquery.min.js"></script>
+  <script src="../assets/js/core/jquery.min.js"></script>
+  <script src="../assets/js/core/popper.min.js"></script>
+  <script src="../assets/js/core/bootstrap-material-design.min.js"></script>
+  <script src="../assets/js/plugins/perfect-scrollbar.jquery.min.js"></script>
   <!-- Plugin for the momentJs  -->
-  <script src="assets/js/plugins/moment.min.js"></script>
+  <script src="../assets/js/plugins/moment.min.js"></script>
   <!--  Plugin for Sweet Alert -->
-  <script src="assets/js/plugins/sweetalert2.js"></script>
+  <script src="../assets/js/plugins/sweetalert2.js"></script>
   <!-- Forms Validations Plugin -->
-  <script src="assets/js/plugins/jquery.validate.min.js"></script>
+  <script src="../assets/js/plugins/jquery.validate.min.js"></script>
   <!-- Plugin for the Wizard, full documentation here: https://github.com/VinceG/twitter-bootstrap-wizard -->
-  <script src="assets/js/plugins/jquery.bootstrap-wizard.js"></script>
+  <script src="../assets/js/plugins/jquery.bootstrap-wizard.js"></script>
   <!--  Plugin for Select, full documentation here: http://silviomoreto.github.io/bootstrap-select -->
-  <script src="assets/js/plugins/bootstrap-selectpicker.js"></script>
+  <script src="../assets/js/plugins/bootstrap-selectpicker.js"></script>
   <!--  Plugin for the DateTimePicker, full documentation here: https://eonasdan.github.io/bootstrap-datetimepicker/ -->
-  <script src="assets/js/plugins/bootstrap-datetimepicker.min.js"></script>
+  <script src="../assets/js/plugins/bootstrap-datetimepicker.min.js"></script>
   <!--  DataTables.net Plugin, full documentation here: https://datatables.net/  -->
-  <script src="assets/js/plugins/jquery.dataTables.min.js"></script>
+  <script src="../assets/js/plugins/jquery.dataTables.min.js"></script>
   <!--  Plugin for Tags, full documentation here: https://github.com/bootstrap-tagsinput/bootstrap-tagsinputs  -->
-  <script src="assets/js/plugins/bootstrap-tagsinput.js"></script>
+  <script src="../assets/js/plugins/bootstrap-tagsinput.js"></script>
   <!-- Plugin for Fileupload, full documentation here: http://www.jasny.net/bootstrap/javascript/#fileinput -->
-  <script src="assets/js/plugins/jasny-bootstrap.min.js"></script>
+  <script src="../assets/js/plugins/jasny-bootstrap.min.js"></script>
   <!--  Full Calendar Plugin, full documentation here: https://github.com/fullcalendar/fullcalendar    -->
-  <script src="assets/js/plugins/fullcalendar.min.js"></script>
+  <script src="../assets/js/plugins/fullcalendar.min.js"></script>
   <!-- Vector Map plugin, full documentation here: http://jvectormap.com/documentation/ -->
-  <script src="assets/js/plugins/jquery-jvectormap.js"></script>
+  <script src="../assets/js/plugins/jquery-jvectormap.js"></script>
   <!--  Plugin for the Sliders, full documentation here: http://refreshless.com/nouislider/ -->
-  <script src="assets/js/plugins/nouislider.min.js"></script>
+  <script src="../assets/js/plugins/nouislider.min.js"></script>
   <!-- Include a polyfill for ES6 Promises (optional) for IE11, UC Browser and Android browser support SweetAlert -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/2.4.1/core.js"></script>
   <!-- Library for adding dinamically elements -->
-  <script src="assets/js/plugins/arrive.min.js"></script>
+  <script src="../assets/js/plugins/arrive.min.js"></script>
   <!--  Google Maps Plugin    -->
   <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY_HERE"></script>
   <!-- Chartist JS -->
-  <script src="assets/js/plugins/chartist.min.js"></script>
+  <script src="../assets/js/plugins/chartist.min.js"></script>
   <!--  Notifications Plugin    -->
-  <script src="assets/js/plugins/bootstrap-notify.js"></script>
+  <script src="../assets/js/plugins/bootstrap-notify.js"></script>
   <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
-  <script src="assets/js/material-dashboard.js?v=2.1.2" type="text/javascript"></script>
+  <script src="../assets/js/material-dashboard.js?v=2.1.2" type="text/javascript"></script>
   <!-- Material Dashboard DEMO methods, don't include it in your project! -->
-  <script src="assets/demo/demo.js"></script>
+  <script src="../assets/demo/demo.js"></script>
   <script>
     $(document).ready(function() {
-      $().ready(function() {
+        $("#btn_reload").click(function(){
+
+              // Perform your action on click here, like redirecting to a new url
+              window.location='categorias.php';
+          });
 
         /*Funções originais do painel*/
         $sidebar = $('.sidebar');
@@ -306,7 +298,6 @@ The above copyright notice and this permission notice shall be included in all c
 
         });
       });
-    });
   </script>
   <script>
     $(document).ready(function() {
