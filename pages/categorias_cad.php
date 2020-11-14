@@ -1,21 +1,5 @@
 <?php
-include('../assets/functions/connection.php');
-$maxItensPerPage=5;
-$pagina_num= isset($_GET['pagina']) && !empty($_GET['pagina']) ? intval($_GET['pagina']) : 0;
-$pagina= isset($_GET['pagina']) && !empty($_GET['pagina']) ? intval($_GET['pagina'])*$maxItensPerPage : 0;
-
-$limitSelect=$pagina.','.$maxItensPerPage;
-
- $sql="select * from (SELECT t.*, 
-                               @rownum := @rownum + 1 as idind
-                          FROM categorias t, 
-                               (SELECT @rownum := 0) r) as categ";
-$result=mysqli_query($conn,$sql);
-$dados=mysqli_fetch_array($result);
-$num_total=mysqli_num_rows($result);
-
-$num_paginas=ceil($num_total/$maxItensPerPage);
-  
+include('../assets/functions/connection.php'); 
 ?>
 
 <!--
@@ -34,7 +18,6 @@ The above copyright notice and this permission notice shall be included in all c
 
 <head>
   <meta charset="utf-8" />
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <link rel="apple-touch-icon" sizes="76x76" href="https://scontent.fsdu25-1.fna.fbcdn.net/v/t1.0-9/83887005_1267809216746693_1795221696081297408_n.png?_nc_cat=111&ccb=2&_nc_sid=85a577&_nc_ohc=aHPUkmLq_4sAX-MK-Ic&_nc_ht=scontent.fsdu25-1.fna&oh=3e6e888c8f94754e4b63bd8a5501f8bb&oe=5FD3D0AF">
   <link rel="icon" type="image/png" href="https://scontent.fsdu25-1.fna.fbcdn.net/v/t1.0-9/83887005_1267809216746693_1795221696081297408_n.png?_nc_cat=111&ccb=2&_nc_sid=85a577&_nc_ohc=aHPUkmLq_4sAX-MK-Ic&_nc_ht=scontent.fsdu25-1.fna&oh=3e6e888c8f94754e4b63bd8a5501f8bb&oe=5FD3D0AF">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
@@ -47,13 +30,12 @@ The above copyright notice and this permission notice shall be included in all c
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
   <!-- CSS Files -->
   <link href="../assets/css/material-dashboard.css?v=2.1.2" rel="stylesheet" />
-
 </head>
 <style>
   .btn .material-icons, .btn:not(.btn-just-icon):not(.btn-fab) .fa {
     position: relative;
     display: inline-block;
-    top: 8px;
+    top: 0px;
     margin-top: -1em;
     margin-bottom: -1em;
     font-size: 1.1rem;
@@ -126,94 +108,39 @@ The above copyright notice and this permission notice shall be included in all c
             <div class="col-lg-12 col-md-12">
               <div class="card">
                 <div class="card-header card-header-warning">
-                  <h4 class="card-title">Categorias 
-                   
-                    <button type="button" id="btn_reload" class="btn btn-info btn-fab btn-fab-mini btn-round" style="float: right;">
-                      <i class="material-icons" style="color: black;">cached</i>
-                    </button>
-                    <a role='button' class="btn btn-success btn-fab btn-fab-mini btn-round" href="categorias_cad.php" style="float: right;">
-                      <i class='material-icons'>add_circle</i>
-                    </a>
-                     <input type="text" class="form-control" style="float: right;" id="myInput" placeholder="Pesquisar por Nome,Descrição..." title="Type in a name">
+                  <h4 class="card-title">Cadastro de Categorias 
                   </h4>
                 </div>
-                <div class="card-body table-responsive">
-                  <table class="table table-hover" id="myTable">
-                    <thead class="text-warning">
-                      <th>Linha</th>
-                      <th>Nome</th>
-                      <th>Descrição</th>
-                      <th class="text-right">Ações</th>
-                    </thead>
-                    <tbody id="tab-id">
-                    <?php
-
-                    $json_url = "http://localhost/crudComJson/api.php?paginationinit=$pagina&paginationend=$maxItensPerPage";
-                    $crl = curl_init();
-                    curl_setopt($crl, CURLOPT_URL, $json_url);
-                    curl_setopt($crl, CURLOPT_RETURNTRANSFER, 1);
-                    curl_setopt($crl, CURLOPT_SSL_VERIFYPEER, FALSE); 
-                    $json = curl_exec($crl);
-                    curl_close($crl);
-                    $arr=json_decode($json, true);
-                    if(count($arr)>1){
-                    foreach($arr as $key=>$value){
-                      echo"
-                            <tr>
-                              <td>".$value['idind']."</td>
-                              <td>".$value['nome']."</td>
-                              <td>".$value['descricao']."</td>
-                              <td class='td-actions text-right'>
-                                <button type='button' rel='tooltip' class='btn btn-warning btn-round'>
-                                    <i class='material-icons'>edit</i>
-                                </button>
-                                <button type='button' rel='tooltip' class='btn btn-danger btn-round'>
-                                    <i class='material-icons'>close</i>
-                                </button>
-                            </td>
-                          </tr>
-                      ";
-                    }
-                  }elseif(count($arr)==1){
-                      echo"
-                            <tr>
-                              <td>".$arr[0]['idind']."</td>
-                              <td>".$arr[0]['nome']."</td>
-                              <td>".$arr[0]['descricao']."</td>
-                              <td class='td-actions text-right'>
-                                <button type='button' rel='tooltip' class='btn btn-warning btn-round'>
-                                    <i class='material-icons'>edit</i>
-                                </button>
-                                <button type='button' rel='tooltip' class='btn btn-danger btn-round'>
-                                    <i class='material-icons'>close</i>
-                                </button>
-                            </td>
-                          </tr>
-                      ";
-                  }
-                    ?>
-                    </tbody>
-                  </table>
-                  <nav aria-label="Page navigation example">
-                    <ul class="pagination">
-                      <li class="page-item">
-                        <a class="page-link" href="categorias.php?pagina=0">Primeira</a>
-                      </li>
-                      <?php for($i=0;$i<$num_paginas;$i++){
-                        $pag=$i+1;
-                        $classe="";
-                        if($pagina_num+1==$pag){
-                          $classe="active";
-                        }
-                        echo"
-                      <li class='page-item $classe'><a class='page-link' href='categorias.php?pagina=$i'>$pag</a></li>";
-                    }
-                    ?>
-                    <li class="page-item">
-                        <a class="page-link" href="categorias.php?pagina=<?php echo $num_paginas-1;?>">Ultima</a>
-                      </li>
-                    </ul>
-                  </nav>
+                </div>
+                <form>
+                <div class="card-body">
+                  <form>
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label class="bmd-label-floating">Nome</label>
+                          <input type="text" class="form-control" name="id_field_nome">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label class="bmd-label-floating">Descrição</label>
+                          <input type="text" class="form-control" name="id_field_descricao">
+                        </div>
+                      </div>
+                    </div>
+                    <center>
+                      <a role="button" class="btn btn-success btn-round" style="color: white;"id="btn_insert">
+                              <i class="material-icons">add</i> Incluir
+                      </button>
+                      <a role="button" class="btn btn-danger btn-round" style="color: white;" id="btn_back">
+                              <i class="material-icons">exit_to_app</i> cancelar
+                      </a>
+                    </center>
+                    <div class="clearfix"></div>
+                  </form>
                 </div>
               </div>
             </div>
@@ -276,18 +203,35 @@ The above copyright notice and this permission notice shall be included in all c
   <script src="../assets/js/material-dashboard.js?v=2.1.2" type="text/javascript"></script>
   <script>
     $(document).ready(function() {
-      $("#myInput").on("keyup", function() {
-            var value = $(this).val().toLowerCase();
-            $("#tab-id tr").filter(function() {
-                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
-            });
-        });
-        $("#btn_reload").click(function(){
+      // Variable to hold request
+      $("#btn_insert").click(function(){
+        var nome= $("input[type=text][name=id_field_nome]" ).val();
+        var descricao=$("input[type=text][name=id_field_descricao]" ).val();
+        $.ajax({
+            url: "ajax.php",
+            type: "POST",
+            data: "aplicacao=categorias&acao=insert&nome="+nome+"&descricao="+descricao+"",
+            dataType: "html"
 
-              // Perform your action on click here, like redirecting to a new url
-              window.location='categorias.php';
-          });
-        
+        }).done(function(resposta) {
+            if(resposta="inserido"){
+              swal.fire({ title:"Categoria Inserida!", type: "success", buttonsStyling: false, confirmButtonClass: "btn btn-success"});
+              $("input[type=text][name=id_field_nome]" ).val('');
+              $("input[type=text][name=id_field_descricao]" ).val('');
+            }
+        }).fail(function(jqXHR, textStatus ) {
+            console.log("Request failed: " + textStatus);
+
+        }).always(function() {
+            console.log("completou");
+        });
+      });
+      $("#btn_back").click(function(){
+
+            // Perform your action on click here, like redirecting to a new url
+            window.location='categorias.php';
+        });
+      
         /*Funções originais do painel*/
         $sidebar = $('.sidebar');
 
