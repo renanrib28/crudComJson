@@ -18,6 +18,9 @@ The above copyright notice and this permission notice shall be included in all c
 
 <head>
   <meta charset="utf-8" />
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <link rel="apple-touch-icon" sizes="76x76" href="https://scontent.fsdu25-1.fna.fbcdn.net/v/t1.0-9/83887005_1267809216746693_1795221696081297408_n.png?_nc_cat=111&ccb=2&_nc_sid=85a577&_nc_ohc=aHPUkmLq_4sAX-MK-Ic&_nc_ht=scontent.fsdu25-1.fna&oh=3e6e888c8f94754e4b63bd8a5501f8bb&oe=5FD3D0AF">
   <link rel="icon" type="image/png" href="https://scontent.fsdu25-1.fna.fbcdn.net/v/t1.0-9/83887005_1267809216746693_1795221696081297408_n.png?_nc_cat=111&ccb=2&_nc_sid=85a577&_nc_ohc=aHPUkmLq_4sAX-MK-Ic&_nc_ht=scontent.fsdu25-1.fna&oh=3e6e888c8f94754e4b63bd8a5501f8bb&oe=5FD3D0AF">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
@@ -71,13 +74,13 @@ The above copyright notice and this permission notice shall be included in all c
               <p>Início</p>
             </a>
           </li>
-          <li class="nav-item active">
+          <li class="nav-item ">
             <a class="nav-link" href="categorias.php">
               <i class="material-icons">toc</i>
               <p>Categorias</p>
             </a>
           </li>
-          <li class="nav-item ">
+          <li class="nav-item active">
             <a class="nav-link" href="produtos.php">
               <i class="material-icons">shopping_cart</i>
               <p>Produtos</p>
@@ -90,7 +93,7 @@ The above copyright notice and this permission notice shall be included in all c
       <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top ">
         <div class="container-fluid">
           <div class="navbar-wrapper">
-            <div class="navbar-brand" >Categorias</div>
+            <div class="navbar-brand" >Produtos</div>
           </div>
           <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
             <span class="sr-only">Toggle navigation</span>
@@ -108,13 +111,34 @@ The above copyright notice and this permission notice shall be included in all c
             <div class="col-lg-12 col-md-12">
               <div class="card">
                 <div class="card-header card-header-warning">
-                  <h4 class="card-title">Cadastro de Categorias 
+                  <h4 class="card-title">Cadastro de Produtos 
                   </h4>
                 </div>
                 </div>
                 <form>
                 <div class="card-body">
                   <form>
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label for="Select1">Categoria</label>
+                          <select class="form-control js-select2" data-style="btn btn-link" id="Select1">
+                            <option value='' selected disabled>Selecione uma categoria</option>
+                            <?php
+                              $sql="select * from (SELECT t.*, 
+                                         @rownum := @rownum + 1 as idind
+                                    FROM categorias t, 
+                                         (SELECT @rownum := 0) r) as categ ORDER BY idind desc limit 10";
+                              $result=mysqli_query($conn,$sql);
+                               while ($dados=mysqli_fetch_array($result)) {
+                                echo"<option value='".$dados['idCategoria']."'>".$dados['nome']."</option>
+                                ";
+                              }
+                              ?>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
                     <div class="row">
                       <div class="col-md-12">
                         <div class="form-group">
@@ -128,6 +152,22 @@ The above copyright notice and this permission notice shall be included in all c
                         <div class="form-group">
                           <label class="bmd-label-floating">Descrição <font style="color:red;">*</font></label>
                           <input type="text" class="form-control" maxlength="100" name="id_field_descricao">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label class="bmd-label-floating">Valor <font style="color:red;">*</font></label>
+                          <input type="number" class="form-control" max="9999999999" onblur="formatDecimal(this);"pattern="^\d*(\.\d{0,2})?$" name="id_field_valor">
+                        </div>
+                      </div>
+                    </div>
+                   <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label class="bmd-label-floating">Estoque <font style="color:red;">*</font></label>
+                          <input type="number" class="form-control" max="9999999999" name="id_field_estoque">
                         </div>
                       </div>
                     </div>
@@ -201,12 +241,48 @@ The above copyright notice and this permission notice shall be included in all c
   <script src="../assets/js/plugins/bootstrap-notify.js"></script>
   <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
   <script src="../assets/js/material-dashboard.js?v=2.1.2" type="text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/js/select2.min.js" defer></script>
   <script>
+     function formatDecimal(input) {
+        var val = '' + (+input.value);
+        if (val) {
+            val = val.split('\.');
+            var out = val[0];
+            while (out.length < 3) {
+                out = '' + out;
+            }
+            if (val[1]) {
+                out = out + '.' + val[1]
+                if (out.length < 6) out = out + '0';
+            } else {
+                out = out + '.00';
+            }
+            input.value = out;
+        } else {
+            input.value = '00.00';
+        }
+    }
     $(document).ready(function() {
+
+$(document).on('keydown', 'input[pattern]', function(e){
+  var input = $(this);
+  var oldVal = input.val();
+  var regex = new RegExp(input.attr('pattern'), 'g');
+
+  setTimeout(function(){
+    var newVal = input.val();
+    if(!regex.test(newVal)){
+      input.val(oldVal); 
+    }
+  }, 0);
+});
+
+       $(".js-select2").select2();
       // Variable to hold request
       $("#btn_insert").click(function(){
         var nome= $("input[type=text][name=id_field_nome]" ).val();
         var descricao=$("input[type=text][name=id_field_descricao]" ).val();
+        var idCategoria=$("select#Select1 option:checked" ).val();
 
         if(!nome || !descricao){
             swal.fire({ title:"Verifique os Campos Obrigratórios!", type: "error", buttonsStyling: false, confirmButtonClass: "btn btn-success"});

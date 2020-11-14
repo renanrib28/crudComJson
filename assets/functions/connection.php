@@ -14,5 +14,12 @@ if (!$conn) {
     echo "Debugging error: " . mysqli_connect_error() . PHP_EOL;
     exit();
 }
-
+function exec_sql($sql,$conn){
+	 $result=mysqli_query($conn,$sql);
+}
+function lookup_sql($sql,$conn){
+	 $result=mysqli_query($conn,$sql);
+	 $dados=mysqli_fetch_array($result);
+	 return $dados;
+}
 ?>

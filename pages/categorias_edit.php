@@ -1,5 +1,9 @@
 <?php
 include('../assets/functions/connection.php'); 
+$idCategoria=isset($_GET['idCategoria']) && !empty($_GET['idCategoria']) ? $_GET['idCategoria'] : '';
+
+$sql="select * from categorias where idCategoria='$idCategoria'";
+$dados=lookup_sql($sql,$conn);
 ?>
 
 <!--
@@ -30,6 +34,7 @@ The above copyright notice and this permission notice shall be included in all c
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
   <!-- CSS Files -->
   <link href="../assets/css/material-dashboard.css?v=2.1.2" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 </head>
 <style>
   .btn .material-icons, .btn:not(.btn-just-icon):not(.btn-fab) .fa {
@@ -119,7 +124,8 @@ The above copyright notice and this permission notice shall be included in all c
                       <div class="col-md-12">
                         <div class="form-group">
                           <label class="bmd-label-floating">Nome <font style="color:red;">*</font></label>
-                          <input type="text" class="form-control" maxlength="50" name="id_field_nome">
+                          <input type="hidden" value="<?php echo $dados['idCategoria']; ?>" name="id_field_idCategoria">
+                          <input type="text" class="form-control" value="<?php echo $dados['nome']; ?>" name="id_field_nome">
                         </div>
                       </div>
                     </div>
@@ -127,13 +133,13 @@ The above copyright notice and this permission notice shall be included in all c
                       <div class="col-md-12">
                         <div class="form-group">
                           <label class="bmd-label-floating">Descrição <font style="color:red;">*</font></label>
-                          <input type="text" class="form-control" maxlength="100" name="id_field_descricao">
+                          <input type="text" class="form-control" value="<?php echo $dados['descricao']; ?>" name="id_field_descricao">
                         </div>
                       </div>
                     </div>
                     <center>
-                      <a role="button" class="btn btn-success btn-round" style="color: white;"id="btn_insert">
-                              <i class="material-icons">add</i> Incluir
+                      <a role="button" class="btn btn-social btn-round btn-facebook" style="color: white;"id="btn_update">
+                              <i class="material-icons">save</i> Salvar
                       </a>
                       <a role="button" class="btn btn-danger btn-round" style="color: white;" id="btn_back">
                               <i class="material-icons">exit_to_app</i> voltar
@@ -167,8 +173,8 @@ The above copyright notice and this permission notice shall be included in all c
   <script src="../assets/js/plugins/perfect-scrollbar.jquery.min.js"></script>
   <!-- Plugin for the momentJs  -->
   <script src="../assets/js/plugins/moment.min.js"></script>
-  <!--  Plugin for Sweet Alert -->
-  <script src="../assets/js/plugins/sweetalert2.js"></script>
+  <!--  Plugin for Sweet Alert
+  <script src="../assets/js/plugins/sweetalert2.js"></script>-->
   <!-- Forms Validations Plugin -->
   <script src="../assets/js/plugins/jquery.validate.min.js"></script>
   <!-- Plugin for the Wizard, full documentation here: https://github.com/VinceG/twitter-bootstrap-wizard -->
@@ -201,27 +207,32 @@ The above copyright notice and this permission notice shall be included in all c
   <script src="../assets/js/plugins/bootstrap-notify.js"></script>
   <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
   <script src="../assets/js/material-dashboard.js?v=2.1.2" type="text/javascript"></script>
+  <script src="sweetalert2.all.min.js"></script>
+  <!-- Optional: include a polyfill for ES6 Promises for IE11 -->
+  <script src="https://cdn.jsdelivr.net/npm/promise-polyfill"></script>
   <script>
     $(document).ready(function() {
       // Variable to hold request
-      $("#btn_insert").click(function(){
+     $("#btn_update").click(function(){
         var nome= $("input[type=text][name=id_field_nome]" ).val();
         var descricao=$("input[type=text][name=id_field_descricao]" ).val();
-
+        var idCategoria=$("input[type=hidden][name=id_field_idCategoria]" ).val();
         if(!nome || !descricao){
             swal.fire({ title:"Verifique os Campos Obrigratórios!", type: "error", buttonsStyling: false, confirmButtonClass: "btn btn-success"});
         }else{
           $.ajax({
               url: "ajax.php",
               type: "POST",
-              data: "aplicacao=categorias&acao=insert&nome="+nome+"&descricao="+descricao+"",
+              data: "aplicacao=categorias&acao=update&nome="+nome+"&descricao="+descricao+"&id="+idCategoria+"",
               dataType: "html"
 
           }).done(function(resposta) {
-              if(resposta="inserido"){
-                swal.fire({ title:"Categoria Inserida!", type: "success", buttonsStyling: false, confirmButtonClass: "btn btn-success"});
-                $("input[type=text][name=id_field_nome]" ).val('');
-                $("input[type=text][name=id_field_descricao]" ).val('');
+              if(resposta="update"){
+                swal.fire({ title:"Registro atualizado!", icon: "success", buttonsStyling: false, customClass: {confirmButton: 'btn btn-success'},}).then((result) => {
+                  if (result.isConfirmed) {
+                    window.location='categorias.php';
+                  }
+                });
               }
           }).fail(function(jqXHR, textStatus ) {
               console.log("Request failed: " + textStatus);
@@ -229,8 +240,9 @@ The above copyright notice and this permission notice shall be included in all c
           }).always(function() {
               console.log("completou");
           });
-      }
+        }
       });
+     
       $("#btn_back").click(function(){
 
             // Perform your action on click here, like redirecting to a new url

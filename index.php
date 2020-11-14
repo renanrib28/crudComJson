@@ -60,7 +60,7 @@ The above copyright notice and this permission notice shall be included in all c
             </a>
           </li>
           <li class="nav-item ">
-            <a class="nav-link" href="pages/tables.html">
+            <a class="nav-link" href="pages/produtos.php">
               <i class="material-icons">shopping_cart</i>
               <p>Produtos</p>
             </a>

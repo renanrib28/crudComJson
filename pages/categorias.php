@@ -47,6 +47,7 @@ The above copyright notice and this permission notice shall be included in all c
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
   <!-- CSS Files -->
   <link href="../assets/css/material-dashboard.css?v=2.1.2" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 
 </head>
 <style>
@@ -96,7 +97,7 @@ The above copyright notice and this permission notice shall be included in all c
             </a>
           </li>
           <li class="nav-item ">
-            <a class="nav-link" href="pages/tables.html">
+            <a class="nav-link" href="produtos.php">
               <i class="material-icons">shopping_cart</i>
               <p>Produtos</p>
             </a>
@@ -108,7 +109,7 @@ The above copyright notice and this permission notice shall be included in all c
       <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top ">
         <div class="container-fluid">
           <div class="navbar-wrapper">
-            <div class="navbar-brand" >Início</div>
+            <div class="navbar-brand" >Categorias</div>
           </div>
           <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
             <span class="sr-only">Toggle navigation</span>
@@ -148,7 +149,7 @@ The above copyright notice and this permission notice shall be included in all c
                     <tbody id="tab-id">
                     <?php
 
-                    $json_url = "http://localhost/crudComJson/api.php?paginationinit=$pagina&paginationend=$maxItensPerPage";
+                    $json_url = "http://localhost/crudComJson/api.php?paginationinit=$pagina&paginationend=$maxItensPerPage&tipobusca=1";
                     $crl = curl_init();
                     curl_setopt($crl, CURLOPT_URL, $json_url);
                     curl_setopt($crl, CURLOPT_RETURNTRANSFER, 1);
@@ -164,15 +165,16 @@ The above copyright notice and this permission notice shall be included in all c
                               <td>".$value['nome']."</td>
                               <td>".$value['descricao']."</td>
                               <td class='td-actions text-right'>
-                                <button type='button' rel='tooltip' class='btn btn-warning btn-round'>
-                                    <i class='material-icons'>edit</i>
-                                </button>
-                                <button type='button' rel='tooltip' class='btn btn-danger btn-round'>
+                                <a role='button'  href='categorias_edit.php?idCategoria=".$value['idCategoria']."' class='btn btn-warning btn-round'>
+                                    <i style='top:18px;' class='material-icons'>edit</i>
+                                </a>
+                                ";?>
+                                <button type='button' id='btn_delete' onclick="exibeLog('<?php echo $value['idCategoria']?>')" class='btn btn-danger btn-round'>
                                     <i class='material-icons'>close</i>
                                 </button>
                             </td>
                           </tr>
-                      ";
+                      <?php
                     }
                   }elseif(count($arr)==1){
                       echo"
@@ -181,15 +183,16 @@ The above copyright notice and this permission notice shall be included in all c
                               <td>".$arr[0]['nome']."</td>
                               <td>".$arr[0]['descricao']."</td>
                               <td class='td-actions text-right'>
-                                <button type='button' rel='tooltip' class='btn btn-warning btn-round'>
-                                    <i class='material-icons'>edit</i>
-                                </button>
-                                <button type='button' rel='tooltip' class='btn btn-danger btn-round'>
+                                <a role='button' href='categorias_edit.php?idCategoria=".$arr[0]['idCategoria']."' class='btn btn-warning btn-round'>
+                                    <i style='top:18px;'class='material-icons'>edit</i>
+                                </a>
+                                ";?>
+                                <button type='button' id='btn_delete' onclick="exibeLog('<?php echo $arr[0]['idCategoria']?>')" class='btn btn-danger btn-round'>
                                     <i class='material-icons'>close</i>
                                 </button>
                             </td>
                           </tr>
-                      ";
+                      <?php
                   }
                     ?>
                     </tbody>
@@ -240,8 +243,8 @@ The above copyright notice and this permission notice shall be included in all c
   <script src="../assets/js/plugins/perfect-scrollbar.jquery.min.js"></script>
   <!-- Plugin for the momentJs  -->
   <script src="../assets/js/plugins/moment.min.js"></script>
-  <!--  Plugin for Sweet Alert -->
-  <script src="../assets/js/plugins/sweetalert2.js"></script>
+  <!--  Plugin for Sweet Alert 
+  <script src="../assets/js/plugins/sweetalert2.js"></script>-->
   <!-- Forms Validations Plugin -->
   <script src="../assets/js/plugins/jquery.validate.min.js"></script>
   <!-- Plugin for the Wizard, full documentation here: https://github.com/VinceG/twitter-bootstrap-wizard -->
@@ -274,7 +277,51 @@ The above copyright notice and this permission notice shall be included in all c
   <script src="../assets/js/plugins/bootstrap-notify.js"></script>
   <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
   <script src="../assets/js/material-dashboard.js?v=2.1.2" type="text/javascript"></script>
+   <script src="sweetalert2.all.min.js"></script>
+  <!-- Optional: include a polyfill for ES6 Promises for IE11 -->
+  <script src="https://cdn.jsdelivr.net/npm/promise-polyfill"></script>
   <script>
+    function exibeLog(idCategoria){
+      Swal.fire({
+                title: 'Deseja realmente excluir?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sim!',
+                cancelButtonText:'Não!'
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  $.ajax({
+                          url: "ajax.php",
+                          type: "POST",
+                          data: "aplicacao=categorias&acao=delete&id="+idCategoria+"",
+                          dataType: "html"
+
+                          }).done(function(resposta) {
+                              if(resposta=="delete"){
+                                swal.fire({ title:"Registro removido!", icon: "success", buttonsStyling: false, customClass: {confirmButton: 'btn btn-success'},}).then((result) => {
+                                  if (result.isConfirmed) {
+                                    window.location='categorias.php';
+                                  }
+                                });
+                              }
+                              if(resposta=="error_delete"){
+                                swal.fire({ title:"Existem produtos nesta categoria!", icon: "error", buttonsStyling: false, customClass: {confirmButton: 'btn btn-success'},}).then((result) => {
+                                  if (result.isConfirmed) {
+                                    window.location='categorias.php';
+                                  }
+                                });
+                              }
+                          }).fail(function(jqXHR, textStatus ) {
+                              console.log("Request failed: " + textStatus);
+
+                          }).always(function() {
+                              console.log("completou");
+                          });
+                }
+              })
+    };
     $(document).ready(function() {
       $("#myInput").on("keyup", function() {
             var value = $(this).val().toLowerCase();
