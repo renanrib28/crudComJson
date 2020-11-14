@@ -33,6 +33,8 @@ The above copyright notice and this permission notice shall be included in all c
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
   <!-- CSS Files -->
   <link href="../assets/css/material-dashboard.css?v=2.1.2" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+  
 </head>
 <style>
   .btn .material-icons, .btn:not(.btn-just-icon):not(.btn-fab) .fa {
@@ -159,7 +161,7 @@ The above copyright notice and this permission notice shall be included in all c
                       <div class="col-md-12">
                         <div class="form-group">
                           <label class="bmd-label-floating">Valor <font style="color:red;">*</font></label>
-                          <input type="number" class="form-control" max="9999999999" onblur="formatDecimal(this);"pattern="^\d*(\.\d{0,2})?$" name="id_field_valor">
+                          <input type="number" class="form-control" max="9999999999" pattern="^\d*(\.\d{0,2})?$" name="id_field_valor">
                         </div>
                       </div>
                     </div>
@@ -207,8 +209,8 @@ The above copyright notice and this permission notice shall be included in all c
   <script src="../assets/js/plugins/perfect-scrollbar.jquery.min.js"></script>
   <!-- Plugin for the momentJs  -->
   <script src="../assets/js/plugins/moment.min.js"></script>
-  <!--  Plugin for Sweet Alert -->
-  <script src="../assets/js/plugins/sweetalert2.js"></script>
+  <!--  Plugin for Sweet Alert 
+  <script src="../assets/js/plugins/sweetalert2.js"></script>-->
   <!-- Forms Validations Plugin -->
   <script src="../assets/js/plugins/jquery.validate.min.js"></script>
   <!-- Plugin for the Wizard, full documentation here: https://github.com/VinceG/twitter-bootstrap-wizard -->
@@ -243,25 +245,7 @@ The above copyright notice and this permission notice shall be included in all c
   <script src="../assets/js/material-dashboard.js?v=2.1.2" type="text/javascript"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/js/select2.min.js" defer></script>
   <script>
-     function formatDecimal(input) {
-        var val = '' + (+input.value);
-        if (val) {
-            val = val.split('\.');
-            var out = val[0];
-            while (out.length < 3) {
-                out = '' + out;
-            }
-            if (val[1]) {
-                out = out + '.' + val[1]
-                if (out.length < 6) out = out + '0';
-            } else {
-                out = out + '.00';
-            }
-            input.value = out;
-        } else {
-            input.value = '00.00';
-        }
-    }
+
     $(document).ready(function() {
 
 $(document).on('keydown', 'input[pattern]', function(e){
@@ -283,22 +267,25 @@ $(document).on('keydown', 'input[pattern]', function(e){
         var nome= $("input[type=text][name=id_field_nome]" ).val();
         var descricao=$("input[type=text][name=id_field_descricao]" ).val();
         var idCategoria=$("select#Select1 option:checked" ).val();
-
-        if(!nome || !descricao){
-            swal.fire({ title:"Verifique os Campos Obrigratórios!", type: "error", buttonsStyling: false, confirmButtonClass: "btn btn-success"});
+        var valor=$("input[type=number][name=id_field_valor]" ).val();
+        var estoque=$("input[type=number][name=id_field_estoque]" ).val();
+        if(!nome || !descricao || !idCategoria || !valor || !estoque){
+            swal.fire({ title:"Verifique os Campos Obrigratórios!", icon: "error",buttonsStyling: false, customClass: {confirmButton: 'btn btn-success'},});
         }else{
           $.ajax({
               url: "ajax.php",
               type: "POST",
-              data: "aplicacao=categorias&acao=insert&nome="+nome+"&descricao="+descricao+"",
+              data: "aplicacao=produtos&acao=insert&nome="+nome+"&descricao="+descricao+"&categoria="+idCategoria+"&valor="+valor+"&estoque="+estoque+"",
               dataType: "html"
 
           }).done(function(resposta) {
               if(resposta="inserido"){
-                swal.fire({ title:"Categoria Inserida!", type: "success", buttonsStyling: false, confirmButtonClass: "btn btn-success"});
+                swal.fire({ title:"Produto Inserido!", icon: "success", buttonsStyling: false, customClass: {confirmButton: 'btn btn-success'},});
                 $("input[type=text][name=id_field_nome]" ).val('');
                 $("input[type=text][name=id_field_descricao]" ).val('');
-              }
+                $("select#Select1 option:checked" ).val('0');
+                $("input[type=number][name=id_field_valor]" ).val('');
+                $("input[type=number][name=id_field_estoque]" ).val('');              }
           }).fail(function(jqXHR, textStatus ) {
               console.log("Request failed: " + textStatus);
 
@@ -310,7 +297,7 @@ $(document).on('keydown', 'input[pattern]', function(e){
       $("#btn_back").click(function(){
 
             // Perform your action on click here, like redirecting to a new url
-            window.location='categorias.php';
+            window.location='produtos.php';
         });
       
         /*Funções originais do painel*/

@@ -1,20 +1,9 @@
 <?php
-include('../assets/functions/connection.php');
-$maxItensPerPage=5;
-$pagina_num= isset($_GET['pagina']) && !empty($_GET['pagina']) ? intval($_GET['pagina']) : 0;
-$pagina= isset($_GET['pagina']) && !empty($_GET['pagina']) ? intval($_GET['pagina'])*$maxItensPerPage : 0;
+include('../assets/functions/connection.php'); 
+$idProduto=isset($_GET['idProduto']) && !empty($_GET['idProduto']) ? $_GET['idProduto'] : '';
 
-$limitSelect=$pagina.','.$maxItensPerPage;
-
- $sql="select * from (SELECT t.*, 
-                               @rownum := @rownum + 1 as idind
-                          FROM produtos t, 
-                               (SELECT @rownum := 0) r) as categ";
-$result=mysqli_query($conn,$sql);
-$dados=mysqli_fetch_array($result);
-$num_total=mysqli_num_rows($result);
-
-$num_paginas=ceil($num_total/$maxItensPerPage);
+$sql="select * from produtos where idProduto='$idProduto'";
+$dados=lookup_sql($sql,$conn);
 
 ?>
 
@@ -34,6 +23,8 @@ The above copyright notice and this permission notice shall be included in all c
 
 <head>
   <meta charset="utf-8" />
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <link rel="apple-touch-icon" sizes="76x76" href="https://scontent.fsdu25-1.fna.fbcdn.net/v/t1.0-9/83887005_1267809216746693_1795221696081297408_n.png?_nc_cat=111&ccb=2&_nc_sid=85a577&_nc_ohc=aHPUkmLq_4sAX-MK-Ic&_nc_ht=scontent.fsdu25-1.fna&oh=3e6e888c8f94754e4b63bd8a5501f8bb&oe=5FD3D0AF">
   <link rel="icon" type="image/png" href="https://scontent.fsdu25-1.fna.fbcdn.net/v/t1.0-9/83887005_1267809216746693_1795221696081297408_n.png?_nc_cat=111&ccb=2&_nc_sid=85a577&_nc_ohc=aHPUkmLq_4sAX-MK-Ic&_nc_ht=scontent.fsdu25-1.fna&oh=3e6e888c8f94754e4b63bd8a5501f8bb&oe=5FD3D0AF">
@@ -48,13 +39,12 @@ The above copyright notice and this permission notice shall be included in all c
   <!-- CSS Files -->
   <link href="../assets/css/material-dashboard.css?v=2.1.2" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-
 </head>
 <style>
   .btn .material-icons, .btn:not(.btn-just-icon):not(.btn-fab) .fa {
     position: relative;
     display: inline-block;
-    top: 8px;
+    top: 0px;
     margin-top: -1em;
     margin-bottom: -1em;
     font-size: 1.1rem;
@@ -90,7 +80,7 @@ The above copyright notice and this permission notice shall be included in all c
               <p>Início</p>
             </a>
           </li>
-          <li class="nav-item">
+          <li class="nav-item ">
             <a class="nav-link" href="categorias.php">
               <i class="material-icons">toc</i>
               <p>Categorias</p>
@@ -127,99 +117,81 @@ The above copyright notice and this permission notice shall be included in all c
             <div class="col-lg-12 col-md-12">
               <div class="card">
                 <div class="card-header card-header-warning">
-                  <h4 class="card-title">Produtos 
-                   
-                    <button type="button" id="btn_reload" class="btn btn-info btn-fab btn-fab-mini btn-round" style="float: right;">
-                      <i class="material-icons" style="color: black;">cached</i>
-                    </button>
-                    <a role='button' class="btn btn-success btn-fab btn-fab-mini btn-round" href="produtos_cad.php" style="float: right;">
-                      <i class='material-icons'>add_circle</i>
-                    </a>
-                     <input type="text" class="form-control" style="float: right;" id="myInput" placeholder="Pesquisar por Nome,Descrição..." title="Type in a name">
+                  <h4 class="card-title">Cadastro de Produtos 
                   </h4>
                 </div>
-                <div class="card-body table-responsive">
-                  <table class="table table-hover" id="myTable">
-                    <thead class="text-warning">
-                      <th>Linha</th>
-                      <th>Categoria</th>
-                      <th>Nome</th>
-                      <th>Descrição</th>
-                      <th class="text-right">Ações</th>
-                    </thead>
-                    <tbody id="tab-id">
-                    <?php
-
-                    $json_url = "http://localhost/crudComJson/api.php?paginationinit=$pagina&paginationend=$maxItensPerPage&tipobusca=2";
-                    $crl = curl_init();
-                    curl_setopt($crl, CURLOPT_URL, $json_url);
-                    curl_setopt($crl, CURLOPT_RETURNTRANSFER, 1);
-                    curl_setopt($crl, CURLOPT_SSL_VERIFYPEER, FALSE); 
-                    $json = curl_exec($crl);
-                    curl_close($crl);
-                    $arr=json_decode($json, true);
-                    if(count($arr)>1){
-                    foreach($arr as $key=>$value){
-                      echo"
-                            <tr>
-                              <td>".$value['idind']."</td>
-                              <td>".$value['categoria']."</td>
-                              <td>".$value['nome']."</td>
-                              <td>".$value['descricao']."</td>
-                              <td class='td-actions text-right'>
-                                <a role='button'  href='produtos_edit.php?idProduto=".$value['idProduto']."' class='btn btn-warning btn-round'>
-                                    <i style='top:18px;' class='material-icons'>edit</i>
-                                </a>
-                                ";?>
-                                <button type='button' id='btn_delete' onclick="exibeLog('<?php echo $value['idProduto']?>')" class='btn btn-danger btn-round'>
-                                    <i class='material-icons'>close</i>
-                                </button>
-                            </td>
-                          </tr>
-                      <?php
-                    }
-                  }elseif(count($arr)==1){
-                      echo"
-                            <tr>
-                              <td>".$arr[0]['idind']."</td>
-                              <td>".$arr[0]['categoria']."</td>
-                              <td>".$arr[0]['nome']."</td>
-                              <td>".$arr[0]['descricao']."</td>
-                              <td class='td-actions text-right'>
-                                <a role='button' href='produtos_edit.php?idProduto=".$arr[0]['idProduto']."' class='btn btn-warning btn-round'>
-                                    <i style='top:18px;'class='material-icons'>edit</i>
-                                </a>
-                                ";?>
-                                <button type='button' id='btn_delete' onclick="exibeLog('<?php echo $arr[0]['idProduto']?>')" class='btn btn-danger btn-round'>
-                                    <i class='material-icons'>close</i>
-                                </button>
-                            </td>
-                          </tr>
-                      <?php
-                  }
-                    ?>
-                    </tbody>
-                  </table>
-                  <nav aria-label="Page navigation example">
-                    <ul class="pagination">
-                      <li class="page-item">
-                        <a class="page-link" href="produtos.php?pagina=0">Primeira</a>
-                      </li>
-                      <?php for($i=0;$i<$num_paginas;$i++){
-                        $pag=$i+1;
-                        $classe="";
-                        if($pagina_num+1==$pag){
-                          $classe="active";
-                        }
-                        echo"
-                      <li class='page-item $classe'><a class='page-link' href='produtos.php?pagina=$i'>$pag</a></li>";
-                    }
-                    ?>
-                    <li class="page-item">
-                        <a class="page-link" href="produtos.php?pagina=<?php echo $num_paginas-1;?>">Ultima</a>
-                      </li>
-                    </ul>
-                  </nav>
+                </div>
+                <form>
+                <div class="card-body">
+                  <form>
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label for="Select1">Categoria</label>
+                          <select class="form-control js-select2" data-style="btn btn-link" id="Select1">
+                            <option value='' disabled>Selecione uma categoria</option>
+                            <?php
+                              $sql="select * from (SELECT t.*, 
+                                         @rownum := @rownum + 1 as idind
+                                    FROM categorias t, 
+                                         (SELECT @rownum := 0) r) as categ ORDER BY idind desc limit 10";
+                              $result=mysqli_query($conn,$sql);
+                               while ($dados2=mysqli_fetch_array($result)) {
+                                $class='';
+                                if($dados2['idCategoria']==$dados['idCategoria']){
+                                  $class='selected';
+                                }
+                                echo"<option $class value='".$dados2['idCategoria']."'>".$dados2['nome']."</option>
+                                ";
+                              }
+                              ?>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label class="bmd-label-floating">Nome <font style="color:red;">*</font></label>
+                          <input type="text" class="form-control" value="<?php echo $dados['nome']; ?>" maxlength="50" name="id_field_nome">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label class="bmd-label-floating">Descrição <font style="color:red;">*</font></label>
+                          <input type="text" class="form-control" value="<?php echo $dados['descricao']; ?>"maxlength="100" name="id_field_descricao">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label class="bmd-label-floating">Valor <font style="color:red;">*</font></label>
+                          <input type="number" class="form-control" max="9999999999" value="<?php echo $dados['valor']; ?>"pattern="^\d*(\.\d{0,2})?$" name="id_field_valor">
+                        </div>
+                      </div>
+                    </div>
+                   <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label class="bmd-label-floating">Estoque <font style="color:red;">*</font></label>
+                          <input type="hidden" value="<?php echo $dados['idProduto']; ?>" name="id_field_idProduto">
+                          <input type="number" class="form-control" max="9999999999" value="<?php echo $dados['estoque']; ?>" name="id_field_estoque">
+                        </div>
+                      </div>
+                    </div>
+                    <center>
+                      <a role="button" class="btn btn-social btn-round btn-facebook" style="color: white;"id="btn_update">
+                              <i class="material-icons">save</i> Salvar
+                      </a>
+                      <a role="button" class="btn btn-danger btn-round" style="color: white;" id="btn_back">
+                              <i class="material-icons">exit_to_app</i> voltar
+                      </a>
+                    </center>
+                    <div class="clearfix"></div>
+                  </form>
                 </div>
               </div>
             </div>
@@ -280,57 +252,64 @@ The above copyright notice and this permission notice shall be included in all c
   <script src="../assets/js/plugins/bootstrap-notify.js"></script>
   <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
   <script src="../assets/js/material-dashboard.js?v=2.1.2" type="text/javascript"></script>
-   <script src="sweetalert2.all.min.js"></script>
-  <!-- Optional: include a polyfill for ES6 Promises for IE11 -->
-  <script src="https://cdn.jsdelivr.net/npm/promise-polyfill"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/js/select2.min.js" defer></script>
   <script>
-    function exibeLog(idProduto){
-      Swal.fire({
-                title: 'Deseja realmente excluir?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Sim!',
-                cancelButtonText:'Não!'
-              }).then((result) => {
-                if (result.isConfirmed) {
-                  $.ajax({
-                          url: "ajax.php",
-                          type: "POST",
-                          data: "aplicacao=produtos&acao=delete&id="+idProduto+"",
-                          dataType: "html"
 
-                          }).done(function(resposta) {
-                              if(resposta=="delete"){
-                                swal.fire({ title:"Registro removido!", icon: "success", buttonsStyling: false, customClass: {confirmButton: 'btn btn-success'},}).then((result) => {
-                                  if (result.isConfirmed) {
-                                    window.location='produtos.php';
-                                  }
-                                });
-                              }
-                          }).fail(function(jqXHR, textStatus ) {
-                              console.log("Request failed: " + textStatus);
-
-                          }).always(function() {
-                              console.log("completou");
-                          });
-                }
-              })
-    };
     $(document).ready(function() {
-      $("#myInput").on("keyup", function() {
-            var value = $(this).val().toLowerCase();
-            $("#tab-id tr").filter(function() {
-                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
-            });
-        });
-        $("#btn_reload").click(function(){
 
-              // Perform your action on click here, like redirecting to a new url
-              window.location='produtos.php';
+$(document).on('keydown', 'input[pattern]', function(e){
+  var input = $(this);
+  var oldVal = input.val();
+  var regex = new RegExp(input.attr('pattern'), 'g');
+
+  setTimeout(function(){
+    var newVal = input.val();
+    if(!regex.test(newVal)){
+      input.val(oldVal); 
+    }
+  }, 0);
+});
+
+       $(".js-select2").select2();
+      // Variable to hold request
+      $("#btn_update").click(function(){
+        var nome= $("input[type=text][name=id_field_nome]" ).val();
+        var descricao=$("input[type=text][name=id_field_descricao]" ).val();
+        var idCategoria=$("select#Select1 option:checked" ).val();
+        var valor=$("input[type=number][name=id_field_valor]" ).val();
+        var estoque=$("input[type=number][name=id_field_estoque]" ).val();
+        var idProduto=$("input[type=hidden][name=id_field_idProduto]" ).val();
+        if(!nome || !descricao){
+            swal.fire({ title:"Verifique os Campos Obrigratórios!", icon: "error", buttonsStyling: false, customClass: {confirmButton: 'btn btn-success'},});
+        }else{
+          $.ajax({
+              url: "ajax.php",
+              type: "POST",
+              data: "aplicacao=produtos&acao=update&nome="+nome+"&descricao="+descricao+"&categoria="+idCategoria+"&valor="+valor+"&estoque="+estoque+"&id="+idProduto+"",
+              dataType: "html"
+
+          }).done(function(resposta) {
+              if(resposta="update"){
+                swal.fire({ title:"Registro atualizado!", icon: "success", buttonsStyling: false, customClass: {confirmButton: 'btn btn-success'},}).then((result) => {
+                  if (result.isConfirmed) {
+                    window.location='produtos.php';
+                  }
+                });
+              }
+          }).fail(function(jqXHR, textStatus ) {
+              console.log("Request failed: " + textStatus);
+
+          }).always(function() {
+              console.log("completou");
           });
-        
+        }
+      });
+      $("#btn_back").click(function(){
+
+            // Perform your action on click here, like redirecting to a new url
+            window.location='produtos.php';
+        });
+      
         /*Funções originais do painel*/
         $sidebar = $('.sidebar');
 
