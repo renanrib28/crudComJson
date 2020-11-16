@@ -1,9 +1,9 @@
 <?php
 include('assets/functions/connection.php');
  header('Content-Type: application/json;charset=utf-8'); 
- $limit1= intval($_GET['paginationinit']);
- $limit2= intval($_GET['paginationend']);
- $tipo=intval($_GET['tipobusca']);
+ $limit1= isset($_GET['paginationinit']) && !empty($_GET['paginationinit']) ? intval($_GET['paginationinit']): 0;
+ $limit2= isset($_GET['paginationend']) && !empty($_GET['paginationend']) ? intval($_GET['paginationend']) : 0;
+ $tipo=isset($_GET['tipobusca']) && !empty($_GET['tipobusca']) ? intval($_GET['tipobusca']) : 0;
 
  if($tipo==1){
   $sql="select * from (SELECT t.*, 
