@@ -4,7 +4,9 @@ include('assets/functions/connection.php');
  $limit1= isset($_GET['paginationinit']) && !empty($_GET['paginationinit']) ? intval($_GET['paginationinit']): 0;
  $limit2= isset($_GET['paginationend']) && !empty($_GET['paginationend']) ? intval($_GET['paginationend']) : 0;
  $tipo=isset($_GET['tipobusca']) && !empty($_GET['tipobusca']) ? intval($_GET['tipobusca']) : 0;
-
+if($limit2==0){
+  $tipo=0;
+}
  if($tipo==1){
   $sql="select * from (SELECT t.*, 
                                  @rownum := @rownum + 1 as idind
@@ -22,8 +24,9 @@ include('assets/functions/connection.php');
           $row_array[] =  $col_array;
 
       }
+      if(isset($row_array) && !empty($row_array)){
       echo json_encode($row_array, JSON_UNESCAPED_UNICODE);
-      
+      }
   }
   mysqli_close($conn);
 }elseif($tipo==2){
@@ -45,7 +48,9 @@ include('assets/functions/connection.php');
           $row_array[] =  $col_array;
 
       }
+      if(isset($row_array) && !empty($row_array)){
       echo json_encode($row_array, JSON_UNESCAPED_UNICODE);
+      }
       
   }
   mysqli_close($conn);
