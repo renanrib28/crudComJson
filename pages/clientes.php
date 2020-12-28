@@ -1,5 +1,18 @@
 <?php
-include('../assets/functions/connection.php'); 
+include('../assets/functions/connection.php');
+$maxItensPerPage=5;
+$pagina_num= isset($_GET['pagina']) && !empty($_GET['pagina']) ? intval($_GET['pagina']) : 0;
+$pagina= isset($_GET['pagina']) && !empty($_GET['pagina']) ? intval($_GET['pagina'])*$maxItensPerPage : 0;
+
+$limitSelect=$pagina.','.$maxItensPerPage;
+
+ $sql="SELECT idCliente,nome,cpfcnpj FROM clientes ORDER BY nome asc";
+$result=mysqli_query($conn,$sql);
+$dados=mysqli_fetch_array($result);
+$num_total=mysqli_num_rows($result);
+
+$num_paginas=ceil($num_total/$maxItensPerPage);
+  
 ?>
 
 <!--
@@ -18,8 +31,6 @@ The above copyright notice and this permission notice shall be included in all c
 
 <head>
   <meta charset="utf-8" />
-  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <link rel="apple-touch-icon" sizes="76x76" href="https://scontent.fsdu25-1.fna.fbcdn.net/v/t1.0-9/83887005_1267809216746693_1795221696081297408_n.png?_nc_cat=111&ccb=2&_nc_sid=85a577&_nc_ohc=aHPUkmLq_4sAX-MK-Ic&_nc_ht=scontent.fsdu25-1.fna&oh=3e6e888c8f94754e4b63bd8a5501f8bb&oe=5FD3D0AF">
   <link rel="icon" type="image/png" href="https://scontent.fsdu25-1.fna.fbcdn.net/v/t1.0-9/83887005_1267809216746693_1795221696081297408_n.png?_nc_cat=111&ccb=2&_nc_sid=85a577&_nc_ohc=aHPUkmLq_4sAX-MK-Ic&_nc_ht=scontent.fsdu25-1.fna&oh=3e6e888c8f94754e4b63bd8a5501f8bb&oe=5FD3D0AF">
@@ -34,7 +45,15 @@ The above copyright notice and this permission notice shall be included in all c
   <!-- CSS Files -->
   <link href="../assets/css/material-dashboard.css?v=2.1.2" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-  
+  <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+  <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.22/js/dataTables.bootstrap4.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"></script>
+  <script src="https://cdn.datatables.net/1.10.22/css/dataTables.bootstrap4.min.css"></script>
+
+
+
+
 </head><style>
   .dropdown-toggle::after {
     display: none !important;
@@ -44,7 +63,7 @@ The above copyright notice and this permission notice shall be included in all c
   .btn .material-icons, .btn:not(.btn-just-icon):not(.btn-fab) .fa {
     position: relative;
     display: inline-block;
-    top: 0px;
+    top: 8px;
     margin-top: -1em;
     margin-bottom: -1em;
     font-size: 1.1rem;
@@ -80,24 +99,24 @@ The above copyright notice and this permission notice shall be included in all c
               <p>Início</p>
             </a>
           </li>
-          <li class="nav-item dropdown">
+          <li class="nav-item dropdown active">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <i class="material-icons">supervised_user_circle</i>
               <p>Administrativo</p>
           </a>
           <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-            <a class="dropdown-item" href="clientes.php">Clientes</a>
+            <a class="dropdown-item active" href="clientes.php">Clientes</a>
             <a class="dropdown-item" href="#">Em Breve</a>
             <a class="dropdown-item" href="#">Em Breve</a>
           </div>
       </li>
-          <li class="nav-item ">
+          <li class="nav-item">
             <a class="nav-link" href="categorias.php">
               <i class="material-icons">toc</i>
               <p>Categorias</p>
             </a>
           </li>
-          <li class="nav-item active">
+          <li class="nav-item ">
             <a class="nav-link" href="produtos.php">
               <i class="material-icons">shopping_cart</i>
               <p>Produtos</p>
@@ -110,7 +129,7 @@ The above copyright notice and this permission notice shall be included in all c
       <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top ">
         <div class="container-fluid">
           <div class="navbar-wrapper">
-            <div class="navbar-brand" >Produtos</div>
+            <div class="navbar-brand" >Categorias</div>
           </div>
           <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
             <span class="sr-only">Toggle navigation</span>
@@ -128,76 +147,96 @@ The above copyright notice and this permission notice shall be included in all c
             <div class="col-lg-12 col-md-12">
               <div class="card">
                 <div class="card-header card-header-warning">
-                  <h4 class="card-title">Cadastro de Produtos 
+                  <h4 class="card-title">Categorias 
+                   
+                    <button type="button" id="btn_reload" class="btn btn-info btn-fab btn-fab-mini btn-round" style="float: right;">
+                      <i class="material-icons" style="color: black;">cached</i>
+                    </button>
+                    <a role='button' class="btn btn-success btn-fab btn-fab-mini btn-round" href="categorias_cad.php" style="float: right;">
+                      <i class='material-icons'>add_circle</i>
+                    </a><!--
+                     <input type="text" class="form-control" style="float: right;" id="myInput" placeholder="Pesquisar por Nome,Descrição..." title="Type in a name">!-->
                   </h4>
                 </div>
-                </div>
-                <form>
-                <div class="card-body">
-                  <form>
-                    <div class="row">
-                      <div class="col-md-12">
-                        <div class="form-group">
-                          <label for="Select1">Categoria</label>
-                          <select class="form-control js-select2" data-style="btn btn-link" id="Select1">
-                            <option value='' selected disabled>Selecione uma categoria</option>
-                            <?php
-                              $sql="select * from (SELECT t.*, 
-                                         @rownum := @rownum + 1 as idind
-                                    FROM categorias t, 
-                                         (SELECT @rownum := 0) r) as categ ORDER BY idind desc limit 10";
-                              $result=mysqli_query($conn,$sql);
-                               while ($dados=mysqli_fetch_array($result)) {
-                                echo"<option value='".$dados['idCategoria']."'>".$dados['nome']."</option>
-                                ";
-                              }
-                              ?>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-md-12">
-                        <div class="form-group">
-                          <label class="bmd-label-floating">Nome <font style="color:red;">*</font></label>
-                          <input type="text" class="form-control" maxlength="50" name="id_field_nome">
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-md-12">
-                        <div class="form-group">
-                          <label class="bmd-label-floating">Descrição <font style="color:red;">*</font></label>
-                          <input type="text" class="form-control" maxlength="100" name="id_field_descricao">
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-md-12">
-                        <div class="form-group">
-                          <label class="bmd-label-floating">Valor <font style="color:red;">*</font></label>
-                          <input type="number" class="form-control" max="9999999999" pattern="^\d*(\.\d{0,2})?$" name="id_field_valor">
-                        </div>
-                      </div>
-                    </div>
-                   <div class="row">
-                      <div class="col-md-12">
-                        <div class="form-group">
-                          <label class="bmd-label-floating">Estoque <font style="color:red;">*</font></label>
-                          <input type="number" class="form-control" max="9999999999" name="id_field_estoque">
-                        </div>
-                      </div>
-                    </div>
-                    <center>
-                      <a role="button" class="btn btn-success btn-round" style="color: white;"id="btn_insert">
-                              <i class="material-icons">add</i> Incluir
-                      </a>
-                      <a role="button" class="btn btn-danger btn-round" style="color: white;" id="btn_back">
-                              <i class="material-icons">exit_to_app</i> voltar
-                      </a>
-                    </center>
-                    <div class="clearfix"></div>
-                  </form>
+                <div class="card-body table-responsive">
+                  <table class="table table-hover" id="myTable">
+                    <thead class="text-warning">
+                      <th>Nome</th>
+                      <th>Descrição</th>
+                      <th class="text-right">Ações</th>
+                    </thead>
+                    <tbody id="tab-id">
+                    <?php
+
+                    $json_url = "http://localhost/crudComJson/api.php?paginationinit=0&paginationend=9999999999999999999999999999999999999&tipobusca=3";
+                    $crl = curl_init();
+                    curl_setopt($crl, CURLOPT_URL, $json_url);
+                    curl_setopt($crl, CURLOPT_RETURNTRANSFER, 1);
+                    curl_setopt($crl, CURLOPT_SSL_VERIFYPEER, FALSE); 
+                    $json = curl_exec($crl);
+                    curl_close($crl);
+                    $arr=json_decode($json, true);
+                    if($arr){
+                    if(count($arr)>1){
+                    foreach($arr as $key=>$value){
+                      echo"
+                            <tr>
+                              <td>".$value['nome']."</td>
+                              <td>".$value['cpfcnpj']."</td>
+                              <td class='td-actions text-right'>
+                                <a role='button'  href='categorias_edit.php?idCategoria=".$value['idCliente']."' class='btn btn-warning btn-round'>
+                                    <i style='top:18px;' class='material-icons'>edit</i>
+                                </a>
+                                ";?>
+                                <button type='button' id='btn_delete' onclick="exibeLog('<?php echo $value['idCliente']?>')" class='btn btn-danger btn-round'>
+                                    <i class='material-icons'>close</i>
+                                </button>
+                            </td>
+                          </tr>
+                      <?php
+                    }
+                  }elseif(count($arr)==1){
+                      echo"
+                            <tr>
+                              <td>".$arr[0]['nome']."</td>
+                              <td>".$arr[0]['cpfcnpj']."</td>
+                              <td class='td-actions text-right'>
+                                <a role='button' href='categorias_edit.php?idCategoria=".$arr[0]['idCliente']."' class='btn btn-warning btn-round'>
+                                    <i style='top:18px;'class='material-icons'>edit</i>
+                                </a>
+                                ";?>
+                                <button type='button' id='btn_delete' onclick="exibeLog('<?php echo $arr[0]['idCliente']?>')" class='btn btn-danger btn-round'>
+                                    <i class='material-icons'>close</i>
+                                </button>
+                            </td>
+                          </tr>
+                      <?php
+                  }
+                }
+                    ?>
+                    </tbody>
+                  </table>
+                  <!--
+                  <nav aria-label="Page navigation example">
+                    <ul class="pagination">
+                      <li class="page-item">
+                        <a class="page-link" href="clientes.php?pagina=0">Primeira</a>
+                      </li>
+                      <?php /*for($i=0;$i<$num_paginas;$i++){
+                        $pag=$i+1;
+                        $classe="";
+                        if($pagina_num+1==$pag){
+                          $classe="active";
+                        }
+                        echo"<li class='page-item $classe'><a class='page-link' href='clientes.php?pagina=$i'>$pag</a></li>";
+                    }*/
+                    ?>
+                    <li class="page-item">
+                        <a class="page-link" href="categorias.php?pagina=<?php //echo $num_paginas-1;?>">Ultima</a>
+                      </li>
+                    </ul>
+                  </nav>
+                 -->
                 </div>
               </div>
             </div>
@@ -258,63 +297,84 @@ The above copyright notice and this permission notice shall be included in all c
   <script src="../assets/js/plugins/bootstrap-notify.js"></script>
   <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
   <script src="../assets/js/material-dashboard.js?v=2.1.2" type="text/javascript"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/js/select2.min.js" defer></script>
+   <script src="sweetalert2.all.min.js"></script>
+  <!-- Optional: include a polyfill for ES6 Promises for IE11 -->
+  <script src="https://cdn.jsdelivr.net/npm/promise-polyfill"></script>
   <script>
+    function exibeLog(idCategoria){
+      Swal.fire({
+                title: 'Deseja realmente excluir?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sim!',
+                cancelButtonText:'Não!'
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  $.ajax({
+                          url: "ajax.php",
+                          type: "POST",
+                          data: "aplicacao=categorias&acao=delete&id="+idCategoria+"",
+                          dataType: "html"
 
+                          }).done(function(resposta) {
+                              if(resposta=="delete"){
+                                swal.fire({ title:"Registro removido!", icon: "success", buttonsStyling: false, customClass: {confirmButton: 'btn btn-success'},}).then((result) => {
+                                  if (result.isConfirmed) {
+                                    window.location='categorias.php';
+                                  }
+                                });
+                              }
+                              if(resposta=="error_delete"){
+                                swal.fire({ title:"Existem produtos nesta categoria!", icon: "error", buttonsStyling: false, customClass: {confirmButton: 'btn btn-success'},}).then((result) => {
+                                  if (result.isConfirmed) {
+                                    window.location='categorias.php';
+                                  }
+                                });
+                              }
+                          }).fail(function(jqXHR, textStatus ) {
+                              console.log("Request failed: " + textStatus);
+
+                          }).always(function() {
+                              console.log("completou");
+                          });
+                }
+              })
+    };
     $(document).ready(function() {
-
-$(document).on('keydown', 'input[pattern]', function(e){
-  var input = $(this);
-  var oldVal = input.val();
-  var regex = new RegExp(input.attr('pattern'), 'g');
-
-  setTimeout(function(){
-    var newVal = input.val();
-    if(!regex.test(newVal)){
-      input.val(oldVal); 
-    }
-  }, 0);
-});
-
-       $(".js-select2").select2();
-      // Variable to hold request
-      $("#btn_insert").click(function(){
-        var nome= $("input[type=text][name=id_field_nome]" ).val();
-        var descricao=$("input[type=text][name=id_field_descricao]" ).val();
-        var idCategoria=$("select#Select1 option:checked" ).val();
-        var valor=$("input[type=number][name=id_field_valor]" ).val();
-        var estoque=$("input[type=number][name=id_field_estoque]" ).val();
-        if(!nome || !descricao || !idCategoria || !valor || !estoque){
-            swal.fire({ title:"Verifique os Campos Obrigratórios!", icon: "error",buttonsStyling: false, customClass: {confirmButton: 'btn btn-success'},});
-        }else{
-          $.ajax({
-              url: "ajax.php",
-              type: "POST",
-              data: "aplicacao=produtos&acao=insert&nome="+nome+"&descricao="+descricao+"&categoria="+idCategoria+"&valor="+valor+"&estoque="+estoque+"",
-              dataType: "html"
-
-          }).done(function(resposta) {
-              if(resposta="inserido"){
-                swal.fire({ title:"Produto Inserido!", icon: "success", buttonsStyling: false, customClass: {confirmButton: 'btn btn-success'},});
-                $("input[type=text][name=id_field_nome]" ).val('');
-                $("input[type=text][name=id_field_descricao]" ).val('');
-                $("select#Select1 option:checked" ).val('0');
-                $("input[type=number][name=id_field_valor]" ).val('');
-                $("input[type=number][name=id_field_estoque]" ).val('');              }
-          }).fail(function(jqXHR, textStatus ) {
-              console.log("Request failed: " + textStatus);
-
-          }).always(function() {
-              console.log("completou");
-          });
-      }
-      });
-      $("#btn_back").click(function(){
-
-            // Perform your action on click here, like redirecting to a new url
-            window.location='produtos.php';
+    $('#myTable').DataTable( {
+      "processing": true,
+      "pagingType": "full_numbers",
+        "language": {
+            "lengthMenu": "Exibindo _MENU_ resultados por página",
+            "zeroRecords": "Não foram Localizados Registros",
+            "info": "Exibindo Página _PAGE_ de _PAGES_",
+            "infoEmpty": "Não foram Localizados Registros",
+            "infoFiltered": "(Filtrando de _MAX_ total de registros)",
+            "search":         "Pesquisar:",
+            "paginate": {
+                          "first":      "Primeiro",
+                          "last":       "Ultimo",
+                          "next":       "Próximo",
+                          "previous":   "Anterior"
+                        }
+        }
+    } );
+} );
+    $(document).ready(function() {
+      $("#myInput").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#tab-id tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+            });
         });
-      
+        $("#btn_reload").click(function(){
+
+              // Perform your action on click here, like redirecting to a new url
+              window.location='categorias.php';
+          });
+        
         /*Funções originais do painel*/
         $sidebar = $('.sidebar');
 

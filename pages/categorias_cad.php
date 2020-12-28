@@ -30,7 +30,11 @@ The above copyright notice and this permission notice shall be included in all c
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
   <!-- CSS Files -->
   <link href="../assets/css/material-dashboard.css?v=2.1.2" rel="stylesheet" />
-</head>
+</head><style>
+  .dropdown-toggle::after {
+    display: none !important;
+  }
+</style>
 <style>
   .btn .material-icons, .btn:not(.btn-just-icon):not(.btn-fab) .fa {
     position: relative;
@@ -71,6 +75,17 @@ The above copyright notice and this permission notice shall be included in all c
               <p>Início</p>
             </a>
           </li>
+          <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="material-icons">supervised_user_circle</i>
+              <p>Administrativo</p>
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+            <a class="dropdown-item" href="clientes.php">Clientes</a>
+            <a class="dropdown-item" href="#">Em Breve</a>
+            <a class="dropdown-item" href="#">Em Breve</a>
+          </div>
+      </li>
           <li class="nav-item active">
             <a class="nav-link" href="categorias.php">
               <i class="material-icons">toc</i>
