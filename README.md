@@ -60,3 +60,24 @@ SET FOREIGN_KEY_CHECKS = 1;
 No arquivo connection.php preencher os dados do bd
 
 3- Em pages configurar a api nas aplicações(produtos.php e categorias.php) se caso não for usar em localhost
+
+
+#API
+
+-- ----------------------------
+-- Parâmetros
+-- ----------------------------
+
+URL/api.php?paginationinit=0&paginationend=20&tipobusca=1
+
+-- ----------------------------
+-- paginationinit -> Inicio do Limit
+-- ----------------------------
+
+-- ----------------------------
+-- paginationend -> Fim do Limit
+-- ----------------------------
+
+-- ----------------------------
+-- tipobusca -> 1: Categorias 2:Produtos
+-- ----------------------------
